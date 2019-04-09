@@ -1,0 +1,77 @@
+<div class="text-center">
+  <h2>Pessoas</h2>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-borderless">
+    <thead class="thead-light">
+      <tr class="text-center">
+        <th>#</th>
+        <th>Nome</th>
+        <th>E-Mail</th>
+        <th>Telefone</th>
+        <th>Cidade Natal</th>
+        <th>Cidade Atual</th>
+        <th>Data de Nascimento</th>
+        <th>CPF</th>
+        <th>Opções</th>
+      </tr>
+    </thead>
+    <tbody *ngIf="pessoas && pessoas.length">
+      <tr class="text-center" *ngFor="let pessoa of pessoas">
+        <td>{{pessoa.id}}</td>
+        <td>{{pessoa.nome}}</td>
+        <td>{{pessoa.email}}</td>
+        <td>{{pessoa.telefone}}</td>
+        <td>{{pessoa.cidadeNatal}}</td>
+        <td>{{pessoa.cidadeAtual}}</td>
+        <td>{{pessoa.dataDeNascimento | date: 'dd/MM/yyyy'}}</td>
+        <td>{{pessoa.cpf}}</td>
+        <td>
+          <div class="btn-group">
+            <button class="btn btn-sm" tooltip="Editar" (click)="editarEvento(evento, template)">
+              <i class="fas fa-user-edit"></i>
+            </button>
+            <button class="btn btn-sm" tooltip="Excluir" (click)="excluirEvento(pessoa, confirm)">
+              <i class="fa fa-eraser"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot *ngIf="!pessoas">
+      <tr>
+        <td colspan="7" class="text-center">
+          <h4>Nenhum evento encontrado!</h4>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<!-- MODAL -->
+<div bsModal #confirm="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="dialog-sizes-name1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title pull-left">
+          Atenção
+        </h4>
+        <button type="button" class="close pull-right" (click)="confirm.hide()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="pessoa != undefined">
+        <p>Tem certeza que deseja excluir o(a) {{pessoa.nome}}, código número: {{pessoa.id}}?</p>
+      </div>
+      <div class="modal-body">
+        <button type="button" class="btn btn-outline-success float-left" (click)="confirm.hide()">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-outline-danger float-right" (click)="confirmarDelete(confirm)">
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
