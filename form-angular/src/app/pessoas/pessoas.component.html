@@ -2,6 +2,21 @@
   <h2>Pessoas</h2>
 </div>
 
+<div class="d-flex">
+  <div class="form-inline mr-auto">
+    <div class="form-group mb-2">
+      <label class="mr-2">Procurar:</label><input type="text" class="form-control mr-2" placeholder="Nome"
+        [(ngModel)]="filtro" />
+    </div>
+  </div>
+  <div>
+    <button class="btn btn-outline-secondary" (click)="criarPessoa(editModal)">
+      <i class="fa fa-plus-circle"></i>&nbsp;
+      Nova Pessoa
+    </button>
+  </div>
+</div>
+
 <div class="table-responsive">
   <table class="table table-borderless">
     <thead class="thead-light">
@@ -18,7 +33,7 @@
       </tr>
     </thead>
     <tbody *ngIf="pessoas && pessoas.length">
-      <tr class="text-center" *ngFor="let pessoa of pessoas">
+      <tr class="text-center" *ngFor="let pessoa of pessoasFiltradas">
         <td>{{pessoa.id}}</td>
         <td>{{pessoa.nome}}</td>
         <td>{{pessoa.email}}</td>
@@ -29,10 +44,10 @@
         <td>{{pessoa.cpf}}</td>
         <td>
           <div class="btn-group">
-            <button class="btn btn-sm" tooltip="Editar">
+            <button class="btn btn-sm" tooltip="Editar" (click)="editarPessoa(pessoa, editModal)">
               <i class="fas fa-user-edit"></i>
             </button>
-            <button class="btn btn-sm" tooltip="Excluir" (click)="excluirEvento(pessoa, confirm)">
+            <button class="btn btn-sm" tooltip="Excluir" (click)="excluirPessoa(pessoa, confirm)">
               <i class="fa fa-eraser"></i>
             </button>
           </div>
@@ -50,28 +65,131 @@
 </div>
 
 <!-- MODAL -->
-<div bsModal #confirm="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="dialog-sizes-name1">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title pull-left">
-          Atenção
-        </h4>
-        <button type="button" class="close pull-right" (click)="confirm.hide()" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body" *ngIf="pessoa != undefined">
-        <p>Tem certeza que deseja excluir o(a) {{pessoa.nome}}, código número: {{pessoa.id}}?</p>
-      </div>
-      <div class="modal-body">
-        <button type="button" class="btn btn-outline-success float-left" (click)="confirm.hide()">
-          Cancelar
-        </button>
-        <button type="button" class="btn btn-outline-danger float-right" (click)="confirmarDelete(confirm)">
-          Excluir
-        </button>
-      </div>
-    </div>
+<ng-template #confirm>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">
+      Atenção
+    </h4>
+    <button type="button" class="close pull-right" (click)="modalRef.hide()" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
   </div>
-</div>
+  <div class="modal-body" *ngIf="pessoa != undefined">
+    <label>Tem certeza que deseja excluir? <br /> Nome: {{pessoa.nome}} <br /> Código: {{pessoa.id}}</label>
+  </div>
+  <div class="modal-footer d-flex">
+    <button class="btn btn-outline-secondary" (click)="modalRef.hide()">
+      Cancelar
+    </button>
+    <button class="btn btn-outline-primary ml-auto" (click)="confirmarDelete(confirm)">
+      Excluir
+    </button>
+  </div>
+</ng-template>
+
+<!-- LARGE MODAL -->
+<ng-template #editModal>
+  <div class="modal-header">
+    <h4 *ngIf="pessoa == undefined" id="dialog-sizes-name1" class="modal-title pull-left">
+      Nova Pessoa
+    </h4>
+    <h4 *ngIf="pessoa != undefined" id="dialog-sizes-name1" class="modal-title pull-left">
+      #{{pessoa.id}}, {{pessoa.nome}}
+    </h4>
+    <button type="button" class="close pull-right" (click)="modalRef.hide()" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="cadastroForm">
+      <div class="form-row">
+        <div class="form-group col-md-12">
+          <label>Nome</label>
+          <input type="text" class="form-control"
+            [ngClass]="{'is-invalid': cadastroForm.get('nome').errors && cadastroForm.get('nome').touched}"
+            formControlName="nome" placeholder="Nome">
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('nome').hasError('required') && cadastroForm.get('nome').touched">
+            Campo obrigatório
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label>E-mail</label>
+          <input type="text" class="form-control"
+            [ngClass]="{'is-invalid': cadastroForm.get('email').errors && cadastroForm.get('email').touched}"
+            formControlName="email" placeholder="E-mail">
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('email').hasError('required') && cadastroForm.get('email').touched">
+            Campo obrigatório
+          </div>
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('email').hasError('email') && cadastroForm.get('email').touched">
+            E-mail inválido
+          </div>
+        </div>
+        <div class="form-group col-md-3">
+          <label>Telefone</label>
+          <input type="text" class="form-control"
+            [ngClass]="{'is-invalid': cadastroForm.get('telefone').errors && cadastroForm.get('telefone').touched}"
+            formControlName="telefone" placeholder="Telefone">
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('telefone').hasError('required') && cadastroForm.get('telefone').touched">
+            Campo obrigatório
+          </div>
+        </div>
+        <div class="form-group col-md-3">
+          <label>Data de Nascimento</label>
+          <input type="text" class="form-control" bsDatepicker [bsConfig]="{ dateInputFormat  : 'DD/MM/YYYY' }"
+            [ngClass]="{'is-invalid': cadastroForm.get('dataDeNascimento').errors && cadastroForm.get('dataDeNascimento').touched}"
+            formControlName="dataDeNascimento" placeholder="Data de Nascimento">
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('dataDeNascimento').hasError('required') && cadastroForm.get('dataDeNascimento').touched">
+            Campo obrigatório
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label>Cidade Natal</label>
+          <input type="text" class="form-control"
+            [ngClass]="{'is-invalid': cadastroForm.get('cidadeNatal').errors && cadastroForm.get('cidadeNatal').touched}"
+            formControlName="cidadeNatal" placeholder="Cidade Natal">
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('cidadeNatal').hasError('required') && cadastroForm.get('cidadeNatal').touched">
+            Campo obrigatório
+          </div>
+        </div>
+        <div class="form-group col-md-4">
+          <label>Cidade Atual</label>
+          <input type="text" class="form-control"
+            [ngClass]="{'is-invalid': cadastroForm.get('cidadeAtual').errors && cadastroForm.get('cidadeAtual').touched}"
+            formControlName="cidadeAtual" placeholder="Cidade Atual">
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('cidadeAtual').hasError('required') && cadastroForm.get('cidadeAtual').touched">
+            Campo obrigatório
+          </div>
+        </div>
+        <div class="form-group col-md-4">
+          <label>CPF</label>
+          <input type="text" class="form-control"
+            [ngClass]="{'is-invalid': cadastroForm.get('cpf') && cadastroForm.get('cpf').touched}" formControlName="cpf"
+            placeholder="CPF">
+          <div class="invalid-feedback"
+            *ngIf="cadastroForm.get('cpf').hasError('required') && cadastroForm.get('cpf').touched">
+            Campo obrigatório
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer d-flex">
+    <button class="btn btn-outline-secondary" (click)="modalRef.hide()">
+      Fechar
+    </button>
+    <button class="btn btn-outline-primary ml-auto" [disabled]="!cadastroForm.valid" (click)="salvarAlteracao()">
+      Salvar Alterações
+    </button>
+  </div>
+</ng-template>

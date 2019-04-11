@@ -25,4 +25,12 @@ export class PessoasService {
     return this.http.delete(`${this.baseURL}/id/${id}`);
   }
 
+  putPessoa(pessoa: Pessoa) {
+    return this.http.put(`${this.baseURL}/id/${pessoa.id}`, pessoa);
+  }
+
+  postPessoa(pessoa: Pessoa) {
+    return this.http.post(this.baseURL, pessoa);
+  }
+
 }
