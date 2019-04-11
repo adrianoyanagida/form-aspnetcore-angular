@@ -10,12 +10,14 @@ import { BsDropdownModule, TooltipModule, ModalModule, BsDatepickerModule } from
 import { AppComponent } from './app.component';
 import { PessoasComponent } from './pessoas/pessoas.component';
 import { NavigationComponent } from './navigation/navigation.component';
+import { HomeComponent } from './home/home.component';
 
 @NgModule({
    declarations: [
       AppComponent,
       PessoasComponent,
-      NavigationComponent
+      NavigationComponent,
+      HomeComponent
    ],
    imports: [
       BrowserModule,
